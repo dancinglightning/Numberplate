@@ -2,6 +2,7 @@ import hydra
 import torch
 import pytesseract
 import os
+import vehicle_rc_check
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 pytesseract.pytesseract.tesseract_cmd = r'D:\\Tesseract-OCR\\tesseract.exe'
 ocr_config = r'--psm 6 -c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ -c tessedit_char_blacklist=abcdefghijklmnopqrstuvwxyz.'
@@ -48,23 +49,31 @@ def ocr_image(img,coordinates):
             print("yeah123")
             text += res[1].replace(" ", "").replace(".", "").replace(",", "").replace("\n", "").upper()
             text2 += py_ocr(cropped_img).replace(" ", "").replace(".", "").replace(",", "").replace("\n", "").upper()
-            print("Text1 detected", text, "and", text2, "and", numplate_array)
+            # print("Text1 detected", text, "and", text2, "and", numplate_array)
+            print("Numplates Detected:", numplate_array)
 
         if len(result) > 1 and res[2]> 0.2:
             print("yeah456")
             text += res[1].replace(" ", "").replace(".", "").replace(",", "").replace("\n", "").upper()
             text2 += py_ocr(cropped_img).replace(" ", "").replace(".", "").replace(",", "").replace("\n", "").upper()        
-            print("Text2 detected", text, "and", text2, "and", numplate_array)
+            # print("Text2 detected", text, "and", text2, "and", numplate_array)
+            print("Numplates Detected:", numplate_array)
 
-    if text == text2 and text2 and len(text2)>=9:
-        numplate_recorded = numplate_record(text2)
+    if text:
+        numplate_record(text)
+
+    if text2:
+        numplate_record(text2)
 
     return str(text)
 
-def numplate_record(text):
+def numplate_record(number):
     global numplate_array
-        
-    numplate_array.add(text)
+    if 10 >= len(number) >= 9 and vehicle_rc_check(number):
+        numplate_array.add(number)
+    print()
+    print("Current Numplate Detected are", numplate_array)
+    print()
     return True
 
 def numplate_store(numplate_array):
@@ -161,3 +170,4 @@ def predict(cfg):
 
 if __name__ == "__main__":
     predict()
+    numplate_store()
